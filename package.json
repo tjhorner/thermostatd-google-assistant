@@ -17,6 +17,6 @@
     "express": "^4.17.1",
     "fahrenheit-to-celsius": "^1.0.0",
     "querystring": "^0.2.0",
-    "thermostatd": "^1.0.0"
+    "thermostatd": "^1.0.1"
   }
 }
