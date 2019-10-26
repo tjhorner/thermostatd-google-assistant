@@ -104,6 +104,7 @@ const handleCommand = async command => {
         break
     }
   } catch(e) {
+    console.error(e)
     response.status = "ERROR"
     response.errorCode = "actionNotAvailable"
   }
