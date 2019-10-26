@@ -60,46 +60,52 @@ const handleCommand = async command => {
   }
 
   const execution = command.execution[0]
-  let newState
-  switch(execution.command) {
-    case "action.devices.commands.ThermostatSetMode":
-      if(execution.params.thermostatMode === "off") {
-        newState = await tsd.patchState({
-          powered_on: false
-        })
-      } else if(execution.params.thermostatMode === "on") {
-        newState = await tsd.patchState({
-          powered_on: true
-        })
-      } else {
-        newState = await tsd.patchState({
-          current_mode: modeMap.find(m => m.goog === execution.params.thermostatMode).tsd,
-          powered_on: true
-        })
-      }
-      
-      response.states = tsdStateToGoogState(newState)
-      break
-    case "action.devices.commands.ThermostatTemperatureSetpoint":
-      const currState = await tsd.getState()
 
-      let floor, ceil
-      if(currState.current_mode === "HEAT")
-        [ floor, ceil ] = [ 60, 76 ]
-      else
-        [ floor, ceil ] = [ 64, 88 ]
-
-      newState = await tsd.patchState({
-        target_temperature: getClosestEven(clamp(CtoF(execution.params.thermostatTemperatureSetpoint), floor, ceil))
-      })
-      response.states = tsdStateToGoogState(newState)
-      break
-    case "action.devices.commands.SetFanSpeed":
-      newState = await tsd.patchState({
-        fan_speed: execution.params.fanSpeed
-      })
-      response.states = tsdStateToGoogState(newState)
-      break
+  try {
+    let newState
+    switch(execution.command) {
+      case "action.devices.commands.ThermostatSetMode":
+        if(execution.params.thermostatMode === "off") {
+          newState = await tsd.patchState({
+            powered_on: false
+          })
+        } else if(execution.params.thermostatMode === "on") {
+          newState = await tsd.patchState({
+            powered_on: true
+          })
+        } else {
+          newState = await tsd.patchState({
+            current_mode: modeMap.find(m => m.goog === execution.params.thermostatMode).tsd,
+            powered_on: true
+          })
+        }
+        
+        response.states = tsdStateToGoogState(newState)
+        break
+      case "action.devices.commands.ThermostatTemperatureSetpoint":
+        const currState = await tsd.getState()
+  
+        let floor, ceil
+        if(currState.current_mode === "HEAT")
+          [ floor, ceil ] = [ 60, 76 ]
+        else
+          [ floor, ceil ] = [ 64, 88 ]
+  
+        newState = await tsd.patchState({
+          target_temperature: getClosestEven(clamp(CtoF(execution.params.thermostatTemperatureSetpoint), floor, ceil))
+        })
+        response.states = tsdStateToGoogState(newState)
+        break
+      case "action.devices.commands.SetFanSpeed":
+        newState = await tsd.patchState({
+          fan_speed: execution.params.fanSpeed
+        })
+        response.states = tsdStateToGoogState(newState)
+        break
+    }
+  } catch(e) {
+    response.status = "ERROR"
+    response.errorCode = "actionNotAvailable"
   }
 
   return response
